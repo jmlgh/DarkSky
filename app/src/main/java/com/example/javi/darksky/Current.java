@@ -29,24 +29,24 @@ public class Current {
         this.time = time;
     }
 
-    public double getTemperature() {
-        return temperature;
+    public int getTemperature() {
+        return convertToCelsius(temperature);
     }
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
-    public double getHumidty() {
-        return humidty;
+    public long getHumidty() {
+        return convertToPercentage(humidty);
     }
 
     public void setHumidty(double humidty) {
         this.humidty = humidty;
     }
 
-    public double getPrecipChance() {
-        return precipChance;
+    public long getPrecipChance() {
+        return convertToPercentage(precipChance);
     }
 
     public void setPrecipChance(double precipChance) {
@@ -85,8 +85,8 @@ public class Current {
     }
 
     public int getIconId(){
-        // consigue un id cualquiera que nos sirva para comparar
-        int iconId = R.drawable.clear_day;
+        // ejemplo -- habrá que modificarlo para que coincida con el valor del tiempo actual
+        int iconId = R.drawable.snow;
 
         // asigna el icono segund el Id
         if(icon.equals("clear_day")){
@@ -116,5 +116,13 @@ public class Current {
         }
 
         return iconId;
+    }
+
+    private int convertToCelsius(double fahrTemp){
+        return (int)Math.round((fahrTemp - 32) / 1.8);
+    }
+
+    private long convertToPercentage(double probab){
+        return Math.round(probab * 100);
     }
 }
