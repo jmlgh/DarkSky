@@ -1,4 +1,6 @@
-package com.example.javi.darksky;
+package com.example.javi.darksky.weather;
+
+import com.example.javi.darksky.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

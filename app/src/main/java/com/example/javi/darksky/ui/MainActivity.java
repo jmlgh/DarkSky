@@ -1,10 +1,9 @@
-package com.example.javi.darksky;
+package com.example.javi.darksky.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +12,14 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.javi.darksky.R;
+import com.example.javi.darksky.weather.Current;
+import com.example.javi.darksky.weather.Day;
+import com.example.javi.darksky.weather.Forecast;
+import com.example.javi.darksky.weather.Hour;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -39,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
     // usado para la comunicacion entre la app y la api
     OkHttpClient cliente;
 
-    Current current;
+    //Current current;
+    Forecast forecast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cargarDatos() {
+        Current current = forecast.getmCurrent();
         tempLabel.setText(current.getTemperature()+"");
         humidityValue.setText(current.getHumidty()+"%");
         precipValue.setText(current.getPrecipChance()+"%");
@@ -173,7 +182,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, jsonData);
                         if(response.isSuccessful()){
                             // si existe respuesta satisfactoria, empieza a recuperar datos
-                            current = getCurrentDetails(jsonData);
+                            //current = getCurrentDetails(jsonData); --> obsoleto!!!! sustituido por:
+                            forecast = parseForeacastDetails(jsonData);
                             //cargarDatos(); --> las tareas del interfaz no se pueden hacer en el callback, se deben hacer en el hilo principal
                             /*Existe un método llamado runUiThread() que nos permite “obligar” a la aplicación a ejecutar
                             fragmentos del código en el hilo principal.*/
@@ -192,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "Excepcion: ", e);
                     } catch (JSONException e){
                         Log.e(TAG, "Excepcion: ", e);
+                        Toast.makeText(getBaseContext(), "Algo ha ido mal!", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -199,5 +210,68 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(getBaseContext(), "Error de conexion", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private Forecast parseForeacastDetails(String jsonData) throws JSONException{
+        Forecast forecast = new Forecast();
+        forecast.setmCurrent(getCurrentDetails(jsonData));
+        forecast.setmHourlyForecast(getHourlyForecast(jsonData));
+        forecast.setmDaylyForecast(getDaylyForecast(jsonData));
+        return forecast;
+    }
+
+    private Day[] getDaylyForecast(String jsonData) throws JSONException{
+        // objeto raiz
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+
+        // recupera el objeto subraiz que contiene los arrays de data
+        JSONObject dayly = forecast.getJSONObject("daily");
+        JSONArray dataDayly = dayly.getJSONArray("data");
+        Day[] dAarray = new Day[dataDayly.length()];
+
+        JSONObject dayJson;
+        for(int i = 0; i < dAarray.length; i++){
+            dayJson = dataDayly.getJSONObject(i);
+            dAarray[i] = new Day();
+
+            dAarray[i].setmTimeZone(timezone);
+            dAarray[i].setmTime(dayJson.getLong("time"));
+            dAarray[i].setmSummary(dayJson.getString("summary"));
+            dAarray[i].setmTemp(dayJson.getDouble("temperatureMax"));
+            dAarray[i].setmIcon(dayJson.getString("icon"));
+        }
+
+        return dAarray;
+    }
+
+    private Hour[] getHourlyForecast(String jsonData) throws JSONException{
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+
+        //cargamos primero el objeto json hourly y una vez cargado accedemos al jsonarray data
+        JSONObject hourly = forecast.getJSONObject("hourly");
+        JSONArray dataHourly = hourly.getJSONArray("data");
+        // una vez que obtenemos el array que nos interesa, creamos otro array de tipo Hour con el mismo tamaño y los mismos datos
+        Hour[] hArray = new Hour[dataHourly.length()];
+
+        // recorremos el array y copiamos los datos
+        JSONObject hourJson;
+        for(int i = 0; i < hArray.length; i++){
+            // recupera el archivo JSON
+            hourJson = dataHourly.getJSONObject(i);
+            // crea un nuevo objeto Hour que procederemos a rellenar
+            hArray[i] = new Hour();
+
+            // rellenamos el nuevo objeto Hour
+            hArray[i].setmTime(hourJson.getLong("time"));
+            hArray[i].setmIcon(hourJson.getString("icon"));
+            hArray[i].setmTemp(hourJson.getDouble("temperature"));
+            hArray[i].setmSummary(hourJson.getString("summary"));
+            hArray[i].setmTimeZone(timezone);
+        }
+
+        return hArray;
+
     }
 }

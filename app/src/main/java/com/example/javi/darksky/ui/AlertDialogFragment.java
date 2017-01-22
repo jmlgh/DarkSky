@@ -1,4 +1,4 @@
-package com.example.javi.darksky;
+package com.example.javi.darksky.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
