@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         locationLabel = (TextView)findViewById(R.id.locationLabel);
         humidityValue = (TextView)findViewById(R.id.humidityValue);
         precipValue = (TextView)findViewById(R.id.precipValue);
-        sumaryLabel = (TextView)findViewById(R.id.textView);
+        sumaryLabel = (TextView)findViewById(R.id.summaryTv);
         refreshImage = (ImageView)findViewById(R.id.refreshImageView);
         refreshImage.setOnClickListener(new View.OnClickListener() {
             @Override
