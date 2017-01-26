@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DarkSky</string>
+    <string name="btn_por_horas">Por horas</string>
+    <string name="btn_7_dias">7 Días</string>
 </resources>
